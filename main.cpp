@@ -54,10 +54,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 視覚
 	float searchLight = 200.0f;
 
+	Vector2 distance1;
 
-	Vector2 e;
-
-	Vector2 d;
+	Vector2 distance2;
 
 	float t = 0.0f;
 	// ドットの初期化
@@ -104,26 +103,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 移動の処理
 		player.position.X += player.velocity.X * speed;
 		player.position.Y += player.velocity.Y * speed;
+
+		// 内積を求める
 		
-		d.X = player.position.X - circle.position.X;
-		d.Y = player.position.Y - circle.position.Y;
+		distance1.X = player.position.X - circle.position.X;
+		distance1.Y = player.position.Y - circle.position.Y;
 
-		e.X = (circle.position.X + circle.direction.X * searchLight) - circle.position.X;
-		e.Y = (circle.position.Y - circle.direction.Y * searchLight) - circle.position.Y;
+		distance2.X = (circle.position.X + circle.direction.X * searchLight) - circle.position.X;
+		distance2.Y = (circle.position.Y - circle.direction.Y * searchLight) - circle.position.Y;
 
-		length = sqrtf(e.X * e.X + e.Y * e.Y);
+		length = sqrtf(distance2.X * distance2.X + distance2.Y * distance2.Y);
 
 		if (length != 0.0f) {
-			e.X = e.X / length;
-			e.Y = e.Y / length;
+			distance2.X = distance2.X / length;
+			distance2.Y = distance2.Y / length;
 		}
 
-		dot = d.X * e.X + d.Y * e.Y;
+		dot = distance1.X * distance2.X + distance1.Y * distance2.Y;
 
-		d.X = (circle.position.X + circle.direction.X * searchLight) - circle.position.X;
-		d.Y = (circle.position.Y - circle.direction.Y * searchLight) - circle.position.Y;
+		distance1.X = (circle.position.X + circle.direction.X * searchLight) - circle.position.X;
+		distance1.Y = (circle.position.Y - circle.direction.Y * searchLight) - circle.position.Y;
 
-		length = sqrtf(d.X * d.X + d.Y * d.Y);
+		length = sqrtf(distance1.X * distance1.X + distance1.Y * distance1.Y);
 
 		t = dot / length;
 
@@ -133,16 +134,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			t = 1.0f;
 		}
 
-		d.X = (1.0f - t) * circle.position.X + t * (circle.position.X + circle.direction.X * searchLight);
-		d.Y = (1.0f - t) * circle.position.Y + t * (circle.position.Y - circle.direction.Y * searchLight);
+		distance1.X = (1.0f - t) * circle.position.X + t * (circle.position.X + circle.direction.X * searchLight);
+		distance1.Y = (1.0f - t) * circle.position.Y + t * (circle.position.Y - circle.direction.Y * searchLight);
 
-		d.X = player.position.X - d.X;
-		d.Y = player.position.Y - d.Y;
+		distance1.X = player.position.X - distance1.X;
+		distance1.Y = player.position.Y - distance1.Y;
 
+		// 当たり判定
+		length = sqrtf(distance1.X * distance1.X + distance1.Y * distance1.Y);
 
-
-		length = sqrtf(d.X * d.X + d.Y * d.Y);
-
+		// 色を変える
 		if (length <= circle.radius + player.radius) {
 			circle.color = 0xFF0000FF;
 		} else {
@@ -170,24 +171,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		} else if (directionChengeTimer < 0) {
 			directionChengeTimer = 400;
 		}
-		/*if (player.velocity.X != 0.0f) {
-			player.direction.X = player.velocity.X;
-		}
-
-		if (circle.position.X >= player.position.X) {
-			circle.direction.X = -1;
-		} else {
-			circle.direction.X = 1;
-		}
-
-		dot = player.direction.X * circle.direction.X + player.direction.Y * circle.direction.Y;*/
-
-		/*if (dot < 0.0f) {
-			circle.color = 0x0000FFFF;
-		} else {
-			circle.color = 0xFFFFFFFF;
-		}*/
-
 
 		///
 		/// ↑更新処理ここまで
@@ -196,6 +179,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
+		// 自キャラ
 		Novice::DrawEllipse(
 			static_cast<int>(player.position.X), static_cast<int>((player.position.Y - WCS.Y) * -1),
 			static_cast<int>(player.radius), static_cast<int>(player.radius),
@@ -203,17 +187,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			player.color,
 			kFillModeSolid);
 
-		Novice::DrawLine(
-			static_cast<int>(player.position.X), static_cast<int>((player.position.Y - WCS.Y) * -1),
-			static_cast<int>(player.position.X + player.direction.X * searchLight), static_cast<int>((player.position.Y - WCS.Y) * -1),
-			WHITE);
-
+		// 敵
 		Novice::DrawEllipse(static_cast<int>(circle.position.X), static_cast<int>((circle.position.Y - WCS.Y) * -1),
 			static_cast<int>(circle.radius), static_cast<int>(circle.radius),
 			0.0f,
 			circle.color,
 			kFillModeSolid);
 
+		// 敵の視覚
 		Novice::DrawLine(
 			static_cast<int>(circle.position.X), static_cast<int>((circle.position.Y - WCS.Y) * -1),
 			static_cast<int>(circle.position.X + circle.direction.X * searchLight), static_cast<int>(((circle.position.Y - WCS.Y) * -1) + circle.direction.Y * searchLight),
