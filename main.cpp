@@ -1,7 +1,73 @@
 #include <Novice.h>
+#define _USE_MATH_DEFINES
 #include <MATH.h>
 
-const char kWindowTitle[] = "LC1C_17_サトウ_リュウセイ_タイトル";
+const char kWindowTitle[] = "LE2B_13_サトウ_リュウセイ_TR1";
+
+
+// 構造体ベクトルの宣言
+struct Vector2 {
+	float X;
+	float Y;
+};
+
+// 構造体ボールの宣言
+struct Ball {
+	Vector2 position;
+	Vector2 velocity;
+	Vector2 acceleration;
+	Vector2 direction;
+	float radius;
+	unsigned int color;
+};
+
+//void Collision(Vector2 pos1, Vector2 pos2, Vector2 pos3,float radius1,float radius2,unsigned int color) {
+//	Vector2 e;
+//
+//	Vector2 d;
+//
+//	float t = 0.0f;
+//	// ドットの初期化
+//	float dot = 0.0f;
+//
+//	float length = 0.0f;
+//
+//	d.X = pos1.X - pos2.X;
+//	d.Y = pos1.Y - pos2.Y;
+//
+//	e.X = pos3.X - pos2.X;
+//	e.Y = pos3.Y - pos2.Y;
+//
+//	length = sqrtf(e.X * e.X + e.Y * e.Y);
+//
+//	if (length != 0.0f) {
+//		e.X = e.X / length;
+//		e.Y = e.Y / length;
+//	}
+//
+//	dot = d.X * e.X + d.Y * e.Y;
+//
+//	d.X = pos3.X - pos2.X;
+//	d.Y = pos3.Y - pos2.Y;
+//
+//	length = sqrtf(d.X * d.X + d.Y * d.Y);
+//
+//	t = dot / length;
+//
+//	if (t < 0.0f) {
+//		t = 0.0f;
+//	} else if (t > 1.0f) {
+//		t = 1.0f;
+//	}
+//
+//	d.X = (1.0f - t) * pos2.X + t * pos3.X;
+//	d.Y = (1.0f - t) * pos2.Y + t * pos3.Y;
+//
+//	d.X = pos1.X - d.X;
+//	d.Y = pos1.Y - d.Y;
+//
+//	length = sqrtf(d.X * d.X + d.Y * d.Y);
+//}
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -9,21 +75,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
-	// 構造体ベクトルの宣言
-	struct Vector2 {
-		float X;
-		float Y;
-	};
-
-	// 構造体ボールの宣言
-	struct Ball {
-		Vector2 position;
-		Vector2 velocity;
-		Vector2 acceleration;
-		Vector2 direction;
-		float radius;
-		unsigned int color;
-	};
 
 	// メンバ プレイヤーの宣言
 	Ball player = {
@@ -44,6 +95,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		30.0f,
 		0XFFFFFFFF
 	};
+	// 視覚
+	Vector2 searchLight = { -200.0f,200.0f };
+	Vector2 searchLight2 = { -200.0f,-200.0f };
 
 	// 速度
 	float speed = 10.0f;
@@ -51,19 +105,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 敵が向いている方向を変えるタイマー
 	int directionChengeTimer = 400;
 
-	// 視覚
-	float searchLight = 200.0f;
+	//Vector2 e;
 
+	//Vector2 d;
 
-	Vector2 e;
-
-	Vector2 d;
-
-	float t = 0.0f;
-	// ドットの初期化
-	float dot = 0.0f;
+	//float t = 0.0f;
+	//// ドットの初期化
+	//float dot = 0.0f;
 
 	float length = 0.0f;
+
+	float theta = 0.0f;
 
 	// ワールド座標の宣言
 	Vector2 WCS;
@@ -104,8 +156,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 移動の処理
 		player.position.X += player.velocity.X * speed;
 		player.position.Y += player.velocity.Y * speed;
+
+		//Colision()
 		
-		d.X = player.position.X - circle.position.X;
+	/*	d.X = player.position.X - circle.position.X;
 		d.Y = player.position.Y - circle.position.Y;
 
 		e.X = (circle.position.X + circle.direction.X * searchLight) - circle.position.X;
@@ -147,7 +201,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			circle.color = 0xFF0000FF;
 		} else {
 			circle.color = 0xFFFFFFFF;
-		}
+		}*/
+		theta += float(M_PI) / 60;
+		searchLight.X = cosf(theta) - sinf(theta);
+		searchLight.Y = cosf(theta) + sinf(theta);
+
+		searchLight2.X = cosf(theta) - sinf(theta);
+		searchLight2.Y = cosf(theta) + sinf(theta);
+
 
 		// 一定時間ごとに向きが変わる
 		directionChengeTimer--;
@@ -205,7 +266,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		Novice::DrawLine(
 			static_cast<int>(player.position.X), static_cast<int>((player.position.Y - WCS.Y) * -1),
-			static_cast<int>(player.position.X + player.direction.X * searchLight), static_cast<int>((player.position.Y - WCS.Y) * -1),
+			static_cast<int>(player.position.X), static_cast<int>((player.position.Y - WCS.Y) * -1),
 			WHITE);
 
 		Novice::DrawEllipse(static_cast<int>(circle.position.X), static_cast<int>((circle.position.Y - WCS.Y) * -1),
@@ -216,8 +277,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		Novice::DrawLine(
 			static_cast<int>(circle.position.X), static_cast<int>((circle.position.Y - WCS.Y) * -1),
-			static_cast<int>(circle.position.X + circle.direction.X * searchLight), static_cast<int>(((circle.position.Y - WCS.Y) * -1) + circle.direction.Y * searchLight),
+			static_cast<int>(circle.position.X + circle.direction.X * searchLight.X), static_cast<int>(((circle.position.Y - WCS.Y) * -1) + circle.direction.Y * searchLight.X),
 			WHITE);
+		Novice::DrawTriangle(
+			static_cast<int>(circle.position.X), static_cast<int>((circle.position.Y - WCS.Y) * -1),
+			static_cast<int>(circle.position.X + searchLight.X), static_cast<int>(((circle.position.Y - WCS.Y) * -1) + searchLight.Y),
+			static_cast<int>(circle.position.X + searchLight2.X), static_cast<int>(((circle.position.Y - WCS.Y) * -1) + searchLight2.Y),
+			0xFFFFFFFF,
+			kFillModeSolid
+		);
+		
 		///
 		/// ↑描画処理ここまで
 		///
