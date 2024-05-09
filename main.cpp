@@ -21,53 +21,69 @@ struct Ball {
 	unsigned int color;
 };
 
-//void Collision(Vector2 pos1, Vector2 pos2, Vector2 pos3,float radius1,float radius2,unsigned int color) {
-//	Vector2 e;
-//
-//	Vector2 d;
-//
-//	float t = 0.0f;
-//	// ドットの初期化
-//	float dot = 0.0f;
-//
-//	float length = 0.0f;
-//
-//	d.X = pos1.X - pos2.X;
-//	d.Y = pos1.Y - pos2.Y;
-//
-//	e.X = pos3.X - pos2.X;
-//	e.Y = pos3.Y - pos2.Y;
-//
-//	length = sqrtf(e.X * e.X + e.Y * e.Y);
-//
-//	if (length != 0.0f) {
-//		e.X = e.X / length;
-//		e.Y = e.Y / length;
-//	}
-//
-//	dot = d.X * e.X + d.Y * e.Y;
-//
-//	d.X = pos3.X - pos2.X;
-//	d.Y = pos3.Y - pos2.Y;
-//
-//	length = sqrtf(d.X * d.X + d.Y * d.Y);
-//
-//	t = dot / length;
-//
-//	if (t < 0.0f) {
-//		t = 0.0f;
-//	} else if (t > 1.0f) {
-//		t = 1.0f;
-//	}
-//
-//	d.X = (1.0f - t) * pos2.X + t * pos3.X;
-//	d.Y = (1.0f - t) * pos2.Y + t * pos3.Y;
-//
-//	d.X = pos1.X - d.X;
-//	d.Y = pos1.Y - d.Y;
-//
-//	length = sqrtf(d.X * d.X + d.Y * d.Y);
-//}
+// 内積の関数
+void Collision(Vector2 pos1, Vector2 pos2, Vector2 pos3, float& length) {
+	Vector2 e = {};
+	Vector2 d = {};
+
+	float t = 0.0f;
+
+	// ドットの初期化
+
+	float dot = 0.0f;
+
+
+	d.X = pos1.X - pos2.X;
+
+	d.Y = pos1.Y - pos2.Y;
+
+
+	e.X = pos3.X - pos2.X;
+
+	e.Y = pos3.Y - pos2.Y;
+
+	length = sqrtf(e.X * e.X + e.Y * e.Y);
+
+	if (length != 0.0f) {
+
+		e.X = e.X / length;
+
+		e.Y = e.Y / length;
+
+	}
+
+	dot = d.X * e.X + d.Y * e.Y;
+
+	d.X = pos3.X - pos2.X;
+
+	d.Y = pos3.Y - pos2.Y;
+
+	length = sqrtf(d.X * d.X + d.Y * d.Y);
+
+	t = dot / length;
+
+	if (t < 0.0f) {
+
+		t = 0.0f;
+
+	} else if (t > 1.0f) {
+
+		t = 1.0f;
+
+	}
+
+	d.X = (1.0f - t) * pos2.X + t * pos3.X;
+
+	d.Y = (1.0f - t) * pos2.Y + t * pos3.Y;
+
+	d.X = pos1.X - d.X;
+
+	d.Y = pos1.Y - d.Y;
+
+	length = sqrtf(d.X * d.X + d.Y * d.Y);
+
+	
+}
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -93,29 +109,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.0f,0.0f},
 		{0.0f,0.0f},
 		30.0f,
-		0XFFFFFFFF
+		0xFF0000FF
 	};
 	// 視覚
-	Vector2 searchLight = { -200.0f,200.0f };
-	Vector2 searchLight2 = { -200.0f,-200.0f };
+	Vector2 searchLight[6] = {};
 
+	unsigned int searchLightColor = 0xFFFF0066;
 	// 速度
 	float speed = 10.0f;
 
-	// 敵が向いている方向を変えるタイマー
-	int directionChengeTimer = 400;
-
-	//Vector2 e;
-
-	//Vector2 d;
-
-	//float t = 0.0f;
-	//// ドットの初期化
-	//float dot = 0.0f;
-
+	// ベクトルの長さ
 	float length = 0.0f;
 
-	float theta = 0.0f;
+	// 距離
+	float distance[8] = {};
+
+	// 警戒のフラグ
+	bool isFound = false;
+
+	// 追跡のフラグ
+	bool isAllert = false;
+
+	// 警戒から追跡に変わるまでのタイマー
+	int foundTimer = 120;
+
+	// 追跡から通常に変わるまでのタイマー
+	int allertTimer = 300;
 
 	// ワールド座標の宣言
 	Vector2 WCS;
@@ -157,98 +176,69 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		player.position.X += player.velocity.X * speed;
 		player.position.Y += player.velocity.Y * speed;
 
-		//Colision()
+		// 当たり判定
+		Collision(player.position, circle.position, searchLight[0],distance[0]);
+		Collision(player.position, circle.position, searchLight[1], distance[1]);
+		Collision(player.position, searchLight[0], searchLight[1], distance[2]);
+		Collision(player.position, circle.position, searchLight[2], distance[3]);
+		Collision(player.position, circle.position, searchLight[3], distance[4]);
+		Collision(player.position, searchLight[2], searchLight[3], distance[5]);
+		Collision(player.position, circle.position, searchLight[4], distance[6]);
+		Collision(player.position, circle.position, searchLight[5], distance[7]);
 		
-	/*	d.X = player.position.X - circle.position.X;
-		d.Y = player.position.Y - circle.position.Y;
-
-		e.X = (circle.position.X + circle.direction.X * searchLight) - circle.position.X;
-		e.Y = (circle.position.Y - circle.direction.Y * searchLight) - circle.position.Y;
-
-		length = sqrtf(e.X * e.X + e.Y * e.Y);
-
-		if (length != 0.0f) {
-			e.X = e.X / length;
-			e.Y = e.Y / length;
-		}
-
-		dot = d.X * e.X + d.Y * e.Y;
-
-		d.X = (circle.position.X + circle.direction.X * searchLight) - circle.position.X;
-		d.Y = (circle.position.Y - circle.direction.Y * searchLight) - circle.position.Y;
-
-		length = sqrtf(d.X * d.X + d.Y * d.Y);
-
-		t = dot / length;
-
-		if (t < 0.0f) {
-			t = 0.0f;
-		} else if (t > 1.0f) {
-			t = 1.0f;
-		}
-
-		d.X = (1.0f - t) * circle.position.X + t * (circle.position.X + circle.direction.X * searchLight);
-		d.Y = (1.0f - t) * circle.position.Y + t * (circle.position.Y - circle.direction.Y * searchLight);
-
-		d.X = player.position.X - d.X;
-		d.Y = player.position.Y - d.Y;
-
-
-
-		length = sqrtf(d.X * d.X + d.Y * d.Y);
-
-		if (length <= circle.radius + player.radius) {
-			circle.color = 0xFF0000FF;
+		// 追跡
+		if (distance[3] <= 1.0f + player.radius || distance[4] <= 1.0f + player.radius || distance[5] <= 1.0f + player.radius || distance[7] <= circle.radius + player.radius) {
+			isAllert = true;
+			allertTimer = 300;
+		// 警戒
+		}else if (distance[0] <= 1.0f + player.radius || distance[1] <= 1.0f + player.radius || distance[2] <= 1.0f + player.radius || distance[6] <= 1.0f + player.radius) {
+			isFound = true;
+			if (isAllert) {
+				allertTimer = 300;
+			}
+		// 通常
 		} else {
-			circle.color = 0xFFFFFFFF;
-		}*/
-		theta += float(M_PI) / 60;
-		searchLight.X = cosf(theta) - sinf(theta);
-		searchLight.Y = cosf(theta) + sinf(theta);
-
-		searchLight2.X = cosf(theta) - sinf(theta);
-		searchLight2.Y = cosf(theta) + sinf(theta);
-
-
-		// 一定時間ごとに向きが変わる
-		directionChengeTimer--;
-		if (directionChengeTimer < 400 && directionChengeTimer >= 300) {
-			// 右向き
-			circle.direction.X = 1;
-			circle.direction.Y = 0;
-		}else if (directionChengeTimer < 300 && directionChengeTimer >= 200) {
-			// 下向き
-			circle.direction.X = 0;
-			circle.direction.Y = 1;
-		} else if (directionChengeTimer < 200 && directionChengeTimer >= 100) {
-			// 左向き
-			circle.direction.X = -1;
-			circle.direction.Y = 0;
-		} else if (directionChengeTimer < 100 && directionChengeTimer >= 0) {
-			// 上向き
-			circle.direction.X = 0;
-			circle.direction.Y = -1;
-		} else if (directionChengeTimer < 0) {
-			directionChengeTimer = 400;
+			searchLightColor = 0xFFFFFF66;
+			isFound = false;
 		}
-		/*if (player.velocity.X != 0.0f) {
-			player.direction.X = player.velocity.X;
-		}
-
-		if (circle.position.X >= player.position.X) {
-			circle.direction.X = -1;
+		// 警戒される
+		if (isFound) {
+			foundTimer--;
+			searchLightColor = 0xFFFF0066;
+			// タイマーが0になると追跡状態になる
+			if (foundTimer < 0) {
+				isAllert = true;
+			}
 		} else {
-			circle.direction.X = 1;
+			foundTimer = 120;
 		}
 
-		dot = player.direction.X * circle.direction.X + player.direction.Y * circle.direction.Y;*/
-
-		/*if (dot < 0.0f) {
-			circle.color = 0x0000FFFF;
+		// 追跡される
+		if (isAllert) {
+			allertTimer--;
+			searchLightColor = 0xFF000066;
+			// タイマーが0になると通常状態になる
+			if (allertTimer < 0) {
+				isAllert = false;
+			}
 		} else {
-			circle.color = 0xFFFFFFFF;
-		}*/
+			allertTimer = 300;
+		}
 
+		circle.direction.X = -1;
+		circle.direction.Y = 0;
+		searchLight[0].X = circle.position.X + -400.0f;
+		searchLight[0].Y = circle.position.Y + -200.0f;
+		searchLight[1].X = circle.position.X + -400.0f;
+		searchLight[1].Y = circle.position.Y + 200.0f;
+		searchLight[2].X = circle.position.X + -350.0f;
+		searchLight[2].Y = circle.position.Y + -130.0f;
+		searchLight[3].X = circle.position.X + -350.0f;
+		searchLight[3].Y = circle.position.Y + 130.0f;
+		searchLight[4].X = circle.position.X + -400.0f;
+		searchLight[4].Y = circle.position.Y;
+		searchLight[5].X = circle.position.X + -350.0f;
+		searchLight[5].Y = circle.position.Y;
 
 		///
 		/// ↑更新処理ここまで
@@ -257,6 +247,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
+		// 自キャラ
 		Novice::DrawEllipse(
 			static_cast<int>(player.position.X), static_cast<int>((player.position.Y - WCS.Y) * -1),
 			static_cast<int>(player.radius), static_cast<int>(player.radius),
@@ -264,26 +255,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			player.color,
 			kFillModeSolid);
 
-		Novice::DrawLine(
-			static_cast<int>(player.position.X), static_cast<int>((player.position.Y - WCS.Y) * -1),
-			static_cast<int>(player.position.X), static_cast<int>((player.position.Y - WCS.Y) * -1),
-			WHITE);
-
+		// 敵
 		Novice::DrawEllipse(static_cast<int>(circle.position.X), static_cast<int>((circle.position.Y - WCS.Y) * -1),
 			static_cast<int>(circle.radius), static_cast<int>(circle.radius),
 			0.0f,
 			circle.color,
 			kFillModeSolid);
 
-		Novice::DrawLine(
-			static_cast<int>(circle.position.X), static_cast<int>((circle.position.Y - WCS.Y) * -1),
-			static_cast<int>(circle.position.X + circle.direction.X * searchLight.X), static_cast<int>(((circle.position.Y - WCS.Y) * -1) + circle.direction.Y * searchLight.X),
-			WHITE);
+		// 大きい視界
 		Novice::DrawTriangle(
 			static_cast<int>(circle.position.X), static_cast<int>((circle.position.Y - WCS.Y) * -1),
-			static_cast<int>(circle.position.X + searchLight.X), static_cast<int>(((circle.position.Y - WCS.Y) * -1) + searchLight.Y),
-			static_cast<int>(circle.position.X + searchLight2.X), static_cast<int>(((circle.position.Y - WCS.Y) * -1) + searchLight2.Y),
-			0xFFFFFFFF,
+			static_cast<int>(searchLight[0].X), static_cast<int>((searchLight[0].Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[1].X), static_cast<int>((searchLight[1].Y - WCS.Y) * -1),
+			searchLightColor,
+			kFillModeSolid
+		);
+		// 小さい視界
+		Novice::DrawTriangle(
+			static_cast<int>(circle.position.X), static_cast<int>((circle.position.Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[2].X), static_cast<int>((searchLight[2].Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[3].X), static_cast<int>((searchLight[3].Y - WCS.Y) * -1),
+			searchLightColor,
 			kFillModeSolid
 		);
 		
