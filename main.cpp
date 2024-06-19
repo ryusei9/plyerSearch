@@ -36,7 +36,7 @@ struct Ball {
 
 // 構造体ライトの宣言
 struct light {
-	Vector2 scale;	
+	Vector2 scale;
 	Vector2 rotate;
 	Vector2 translation;
 	Vector2 direction;
@@ -52,6 +52,10 @@ Matrix3x3 Inverse(Matrix3x3 matrix);
 Vector2 Transform(Vector2 vector, Matrix3x3 matrix);
 
 Vector2 TransformNormal(const Vector2 v, const Matrix3x3 m);
+
+Vector2 Normalize(const Vector2 v);
+
+float Normalize(const float pos);
 
 // 回転行列の作成関数
 Matrix3x3 MakeRotateMatrix(float theta);
@@ -111,7 +115,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		screenSearchLight[i].scale = { 1.0f,1.0f };
 	}
 
-	
+
 	// 速度
 	float speed = 10.0f;
 
@@ -120,6 +124,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	const float enemyFoundMoveSpeed = 2.0f;
 
+	Vector2 e2p = {};
+	Vector2 p2e = {};
+
+	Vector2 left{};
+	Vector2 right{};
 
 	// ベクトルの長さ
 	float length = 0.0f;
@@ -140,7 +149,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int allertTimer = 300;
 
 	// 回転のフラグ
-	bool isRotate = false;
+	//abool isRotate = false;
 
 	// 視覚の初期化
 	//bool isLightInitialize = false;
@@ -167,8 +176,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	searchLight[5].translation.Y = circle.translation.Y;
 
 	// キー入力結果を受け取る箱
-	char keys[256] = {0};
-	char preKeys[256] = {0};
+	char keys[256] = { 0 };
+	char preKeys[256] = { 0 };
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -183,7 +192,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 		//ImGui::InputFloat3("translation", &searchLight[0].translation.X);
-		ImGui::InputFloat3("screenTranslation", &screenSearchLight[0].translation.X);
+		ImGui::InputFloat3("screenTranslation", &searchLight[0].translation.X);
 		//ImGui::Checkbox("lightInitialize", &isLightInitialize);
 		ImGui::InputInt("foundTimer", &foundTimer);
 		ImGui::InputInt("allertTimer", &allertTimer);
@@ -213,26 +222,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		circle.translation.Y += circle.velocity.Y;
 
 		// 当たり判定
-		Collision(player.translation, circle.translation, screenSearchLight[0].translation,distance[0]);
-		Collision(player.translation, circle.translation, screenSearchLight[1].translation, distance[1]);
-		Collision(player.translation, screenSearchLight[0].translation, screenSearchLight[1].translation, distance[2]);
-		Collision(player.translation, circle.translation, screenSearchLight[2].translation, distance[3]);
-		Collision(player.translation, circle.translation, screenSearchLight[3].translation, distance[4]);
-		Collision(player.translation, screenSearchLight[2].translation, screenSearchLight[3].translation, distance[5]);
-		Collision(player.translation, circle.translation, screenSearchLight[4].translation, distance[6]);
-		Collision(player.translation, circle.translation, screenSearchLight[5].translation, distance[7]);
-		
+		Collision(player.translation, circle.translation, searchLight[0].translation, distance[0]);
+		Collision(player.translation, circle.translation, searchLight[1].translation, distance[1]);
+		Collision(player.translation, searchLight[0].translation, searchLight[1].translation, distance[2]);
+		Collision(player.translation, circle.translation, searchLight[2].translation, distance[3]);
+		Collision(player.translation, circle.translation, searchLight[3].translation, distance[4]);
+		Collision(player.translation, searchLight[2].translation, searchLight[3].translation, distance[5]);
+		Collision(player.translation, circle.translation, searchLight[4].translation, distance[6]);
+		Collision(player.translation, circle.translation, searchLight[5].translation, distance[7]);
+
 		// 追跡
 		if (distance[3] <= 1.0f + player.radius || distance[4] <= 1.0f + player.radius || distance[5] <= 1.0f + player.radius || distance[7] <= circle.radius + player.radius) {
 			isAllert = true;
 			allertTimer = 300;
-		// 警戒
-		}else if (distance[0] <= 1.0f + player.radius || distance[1] <= 1.0f + player.radius || distance[2] <= 1.0f + player.radius || distance[6] <= 1.0f + player.radius) {
+			// 警戒
+		} else if (distance[0] <= 1.0f + player.radius || distance[1] <= 1.0f + player.radius || distance[2] <= 1.0f + player.radius || distance[6] <= 1.0f + player.radius) {
 			isFound = true;
 			if (isAllert) {
 				allertTimer = 300;
 			}
-		// 通常
+			// 通常
 		} else {
 			searchLightColor = 0xFFFFFF66;
 			isFound = false;
@@ -254,10 +263,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (isAllert) {
 			allertTimer--;
 			searchLightColor = 0xFF000066;
-			circle.velocity = homing(player.translation, circle.translation, circle.velocity,enemyMoveSpeed);
-			for (int i = 0; i < 6; i++) {
+			circle.velocity = homing(player.translation, circle.translation, circle.velocity, enemyMoveSpeed);
+			p2e = Subtract(player.translation, circle.translation);
+			//e2p = Subtract(circle.translation, player.translation);
+			searchLight[0].translation.X += left.X;
+			searchLight[0].translation.Y += left.Y;
+			searchLight[1].translation.X += right.X;
+			searchLight[1].translation.Y += right.Y;
+			searchLight[2].translation.X += left.X;
+			searchLight[2].translation.Y += left.Y;
+			searchLight[3].translation.X += right.X;
+			searchLight[3].translation.Y += right.Y;
+			searchLight[4].translation.X += left.X;
+			searchLight[4].translation.Y += left.Y;
+			searchLight[5].translation.X += right.X;
+			searchLight[5].translation.Y += right.Y;
+			
+			/*for (int i = 0; i < 6; i++) {
 				screenSearchLight[i].translation = lightRotate(player.translation, circle.translation, screenSearchLight[i].translation);
-			}
+			}*/
 			// タイマーが0になると通常状態になる
 			if (allertTimer < 0) {
 				isAllert = false;
@@ -266,37 +290,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			allertTimer = 300;
 			circle.velocity = {};
 		}
+		right.X =p2e.X - cosf(float(M_PI) / 6.0f);
+		right.Y =p2e.Y - sinf(float(M_PI) / 6.0f);
 
-		// 視覚の初期化
-		//if (isLightInitialize) {
-			searchLight[0].translation.X = circle.translation.X + -200.0f;
-			searchLight[0].translation.Y = circle.translation.Y + -100.0f;
-			searchLight[1].translation.X = circle.translation.X + -200.0f;
-			searchLight[1].translation.Y = circle.translation.Y + 100.0f;
-			searchLight[2].translation.X = circle.translation.X + -175.0f;
-			searchLight[2].translation.Y = circle.translation.Y + -65.0f;
-			searchLight[3].translation.X = circle.translation.X + -175.0f;
-			searchLight[3].translation.Y = circle.translation.Y + 65.0f;
-			searchLight[4].translation.X = circle.translation.X + -200.0f;
-			searchLight[4].translation.Y = circle.translation.Y;
-			searchLight[5].translation.X = circle.translation.X + -175.0f;
-			searchLight[5].translation.Y = circle.translation.Y;
-			for (int i = 0; i < 6; i++) {
-				searchLight[i].rotate = {};
-			}
+		left.X = p2e.X + cosf(float(M_PI) / 6.0f);
+		left.Y = p2e.Y + sinf(float(M_PI) / 6.0f);
+		/*for (int i = 0; i < 6; i++) {
+
+		}*/
+		/* 視覚の初期化
+		if (isLightInitialize) {*/
+		
+
 		//}
 
-		for (int i = 0; i < 6; i++) {
-			if (isRotate) {
-				searchLight[i].rotate.X += 0.02f;
-			}
-			/*rotateMatrix = MakeRotateMatrix(searchLight[i].rotate.X);
-			screenSearchLight[i].translation = TransformNormal(searchLight[i].translation, rotateMatrix);*/
-			screenSearchLight[i].matWorld = MakeAffineMatrix(searchLight[i].scale, searchLight[i].rotate, searchLight[i].translation);
-			screenSearchLight[i].translation = Transform(searchLight[i].translation, screenSearchLight[i].matWorld);
-		}
+		//for (int i = 0; i < 6; i++) {
+		//	if (isRotate) {
+		//		searchLight[i].rotate.X += 0.02f;
+		//	}
+		//	/*rotateMatrix = MakeRotateMatrix(searchLight[i].rotate.X);
+		//	screenSearchLight[i].translation = TransformNormal(searchLight[i].translation, rotateMatrix);*/
+		//	screenSearchLight[i].matWorld = MakeAffineMatrix(searchLight[i].scale, searchLight[i].rotate, searchLight[i].translation);
+		//	screenSearchLight[i].translation = Transform(searchLight[i].translation, screenSearchLight[i].matWorld);
+		//}
 
-		
+
 
 		///
 		/// ↑更新処理ここまで
@@ -305,7 +323,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
-		
+
 		// 敵
 		Novice::DrawEllipse(static_cast<int>(circle.translation.X), static_cast<int>((circle.translation.Y - WCS.Y) * -1),
 			static_cast<int>(circle.radius), static_cast<int>(circle.radius),
@@ -321,21 +339,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			player.color,
 			kFillModeSolid);
 
-		
+
 
 		// 大きい視界
 		Novice::DrawTriangle(
 			static_cast<int>(circle.translation.X), static_cast<int>((circle.translation.Y - WCS.Y) * -1),
-			static_cast<int>(screenSearchLight[0].translation.X), static_cast<int>((screenSearchLight[0].translation.Y - WCS.Y) * -1),
-			static_cast<int>(screenSearchLight[1].translation.X), static_cast<int>((screenSearchLight[1].translation.Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[0].translation.X), static_cast<int>((searchLight[0].translation.Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[1].translation.X), static_cast<int>((searchLight[1].translation.Y - WCS.Y) * -1),
 			searchLightColor,
 			kFillModeSolid
 		);
 		// 小さい視界
 		Novice::DrawTriangle(
 			static_cast<int>(circle.translation.X), static_cast<int>((circle.translation.Y - WCS.Y) * -1),
-			static_cast<int>(screenSearchLight[2].translation.X), static_cast<int>((screenSearchLight[2].translation.Y - WCS.Y) * -1),
-			static_cast<int>(screenSearchLight[3].translation.X), static_cast<int>((screenSearchLight[3].translation.Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[2].translation.X), static_cast<int>((searchLight[2].translation.Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[3].translation.X), static_cast<int>((searchLight[3].translation.Y - WCS.Y) * -1),
 			searchLightColor,
 			kFillModeSolid
 		);
@@ -356,7 +374,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//	searchLightColor,
 		//	kFillModeSolid
 		//);
-		
+
 		///
 		/// ↑描画処理ここまで
 		///
@@ -476,7 +494,7 @@ Matrix3x3 MakeRotateMatrix(float theta) {
 	return rotateMatrix;
 }
 
-Vector2 Add(const Vector2 v1, const Vector2 v2){
+Vector2 Add(const Vector2 v1, const Vector2 v2) {
 	return Vector2{ v1.X + v2.X,v1.Y + v2.Y };
 }
 
@@ -528,7 +546,12 @@ Vector2 Normalize(const Vector2 v) {
 	return NormalizeResult;
 }
 
-Vector2 Multiply(const float scalar, const Vector2 v){
+float Normalize(const float pos) {
+	float length = sqrtf(pos * pos);
+	return pos / length;
+}
+
+Vector2 Multiply(const float scalar, const Vector2 v) {
 	Vector2 MultiplyResult = {};
 	MultiplyResult.X = scalar * v.X;
 	MultiplyResult.Y = scalar * v.Y;
@@ -542,8 +565,8 @@ Vector2 Multiply(const Vector2 v1, const Vector2 v2) {
 	return MultiplyResult;
 }
 
-Vector2 homing(Vector2 targetPos, Vector2 movePos,Vector2 velocity,float moveSpeed) {
-	
+Vector2 homing(Vector2 targetPos, Vector2 movePos, Vector2 velocity, float moveSpeed) {
+
 
 	// 自キャラのワールド座標を取得する
 	Vector2 playerPos = targetPos;
