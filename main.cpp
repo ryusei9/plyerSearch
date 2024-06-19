@@ -99,11 +99,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	unsigned int searchLightColor = 0xFFFF0066;
 
-	light screenSearchLight[6] = {};
+	//light searchLight[6] = {};
 
-	for (int i = 0; i < 6; i++) {
-		screenSearchLight[i].scale = { 1.0f,1.0f };
-	}
+	/*for (int i = 0; i < 6; i++) {
+		searchLight[i].scale = { 1.0f,1.0f };
+	}*/
 
 	
 	// 速度
@@ -177,7 +177,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 		ImGui::InputFloat2("translation", &searchLight[0].translation.X);
-		ImGui::InputFloat2("screenTranslation", &screenSearchLight[0].translation.X);
+		//ImGui::InputFloat2("screenTranslation", &searchLight[0].translation.X);
 		ImGui::Checkbox("lightInitialize", &isLightInitialize);
 		ImGui::InputInt("foundTimer", &foundTimer);
 		ImGui::InputInt("allertTimer", &allertTimer);
@@ -207,14 +207,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		circle.translation.Y += circle.velocity.Y;
 
 		// 当たり判定
-		Collision(player.translation, circle.translation, screenSearchLight[0].translation,distance[0]);
-		Collision(player.translation, circle.translation, screenSearchLight[1].translation, distance[1]);
-		Collision(player.translation, screenSearchLight[0].translation, screenSearchLight[1].translation, distance[2]);
-		Collision(player.translation, circle.translation, screenSearchLight[2].translation, distance[3]);
-		Collision(player.translation, circle.translation, screenSearchLight[3].translation, distance[4]);
-		Collision(player.translation, screenSearchLight[2].translation, screenSearchLight[3].translation, distance[5]);
-		Collision(player.translation, circle.translation, screenSearchLight[4].translation, distance[6]);
-		Collision(player.translation, circle.translation, screenSearchLight[5].translation, distance[7]);
+		Collision(player.translation, circle.translation, searchLight[0].translation,distance[0]);
+		Collision(player.translation, circle.translation, searchLight[1].translation, distance[1]);
+		Collision(player.translation, searchLight[0].translation, searchLight[1].translation, distance[2]);
+		Collision(player.translation, circle.translation, searchLight[2].translation, distance[3]);
+		Collision(player.translation, circle.translation, searchLight[3].translation, distance[4]);
+		Collision(player.translation, searchLight[2].translation, searchLight[3].translation, distance[5]);
+		Collision(player.translation, circle.translation, searchLight[4].translation, distance[6]);
+		Collision(player.translation, circle.translation, searchLight[5].translation, distance[7]);
 		
 		// 追跡
 		if (distance[3] <= 1.0f + player.radius || distance[4] <= 1.0f + player.radius || distance[5] <= 1.0f + player.radius || distance[7] <= circle.radius + player.radius) {
@@ -250,7 +250,68 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			searchLightColor = 0xFF000066;
 			circle.velocity = homing(player.translation, circle.translation, circle.velocity,enemyMoveSpeed);
 			for (int i = 0; i < 6; i++) {
-				screenSearchLight[i].translation = lightRotate(player.translation, circle.translation, screenSearchLight[i].translation);
+				// プレイヤーが敵より左にいるとき
+				// 視点が左に向く
+				if (player.translation.X < circle.translation.X) {
+					searchLight[0].translation.X = circle.translation.X + -200.0f;
+					searchLight[0].translation.Y = circle.translation.Y + -100.0f;
+					searchLight[1].translation.X = circle.translation.X + -200.0f;
+					searchLight[1].translation.Y = circle.translation.Y + 100.0f;
+					searchLight[2].translation.X = circle.translation.X + -175.0f;
+					searchLight[2].translation.Y = circle.translation.Y + -65.0f;
+					searchLight[3].translation.X = circle.translation.X + -175.0f;
+					searchLight[3].translation.Y = circle.translation.Y + 65.0f;
+					searchLight[4].translation.X = circle.translation.X + -200.0f;
+					searchLight[4].translation.Y = circle.translation.Y;
+					searchLight[5].translation.X = circle.translation.X + -175.0f;
+					searchLight[5].translation.Y = circle.translation.Y;
+					// プレイヤーが敵より右にいるとき
+					// 視点が右に向く
+				} else if (player.translation.X > circle.translation.X) {
+					searchLight[0].translation.X = circle.translation.X + 200.0f;
+					searchLight[0].translation.Y = circle.translation.Y + -100.0f;
+					searchLight[1].translation.X = circle.translation.X + 200.0f;
+					searchLight[1].translation.Y = circle.translation.Y + 100.0f;
+					searchLight[2].translation.X = circle.translation.X + 175.0f;
+					searchLight[2].translation.Y = circle.translation.Y + -65.0f;
+					searchLight[3].translation.X = circle.translation.X + 175.0f;
+					searchLight[3].translation.Y = circle.translation.Y + 65.0f;
+					searchLight[4].translation.X = circle.translation.X + 200.0f;
+					searchLight[4].translation.Y = circle.translation.Y;
+					searchLight[5].translation.X = circle.translation.X + 175.0f;
+					searchLight[5].translation.Y = circle.translation.Y;
+					// プレイヤーが敵より下にいるとき
+					// 視点が下に向く
+				} else if (player.translation.Y > circle.translation.Y) {
+					searchLight[0].translation.X = circle.translation.Y + 200.0f;
+					searchLight[0].translation.Y = circle.translation.X + -100.0f;
+					searchLight[1].translation.X = circle.translation.Y + 200.0f;
+					searchLight[1].translation.Y = circle.translation.X + 100.0f;
+					searchLight[2].translation.X = circle.translation.Y + 175.0f;
+					searchLight[2].translation.Y = circle.translation.X + -65.0f;
+					searchLight[3].translation.X = circle.translation.Y + 175.0f;
+					searchLight[3].translation.Y = circle.translation.X + 65.0f;
+					searchLight[4].translation.X = circle.translation.Y + 200.0f;
+					searchLight[4].translation.Y = circle.translation.X;
+					searchLight[5].translation.X = circle.translation.Y + 175.0f;
+					searchLight[5].translation.Y = circle.translation.X;
+					// プレイヤーが敵より上にいるとき
+					// 視点が上に向く
+				} else if (player.translation.Y > circle.translation.Y) {
+					searchLight[0].translation.X = circle.translation.Y + -200.0f;
+					searchLight[0].translation.Y = circle.translation.X + -100.0f;
+					searchLight[1].translation.X = circle.translation.Y + -200.0f;
+					searchLight[1].translation.Y = circle.translation.X + 100.0f;
+					searchLight[2].translation.X = circle.translation.Y + -175.0f;
+					searchLight[2].translation.Y = circle.translation.X + -65.0f;
+					searchLight[3].translation.X = circle.translation.Y + -175.0f;
+					searchLight[3].translation.Y = circle.translation.X + 65.0f;
+					searchLight[4].translation.X = circle.translation.Y + -200.0f;
+					searchLight[4].translation.Y = circle.translation.X;
+					searchLight[5].translation.X = circle.translation.Y + -175.0f;
+					searchLight[5].translation.Y = circle.translation.X;
+				}
+				//searchLight[i].translation = lightRotate(player.translation, circle.translation, searchLight[i].translation);
 			}
 			// タイマーが0になると通常状態になる
 			if (allertTimer < 0) {
@@ -285,9 +346,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				searchLight[i].rotate.X += 0.02f;
 			}
 			/*rotateMatrix = MakeRotateMatrix(searchLight[i].rotate.X);
-			screenSearchLight[i].translation = TransformNormal(searchLight[i].translation, rotateMatrix);*/
-			screenSearchLight[i].matWorld = MakeAffineMatrix(searchLight[i].scale, searchLight[i].rotate, searchLight[i].translation);
-			screenSearchLight[i].translation = Transform(screenSearchLight[i].translation, screenSearchLight[i].matWorld);
+			searchLight[i].translation = TransformNormal(searchLight[i].translation, rotateMatrix);*/
+			//searchLight[i].matWorld = MakeAffineMatrix(searchLight[i].scale, searchLight[i].rotate, searchLight[i].translation);
+			//searchLight[i].translation = Transform(searchLight[i].translation, searchLight[i].matWorld);
 		}
 
 		
@@ -317,36 +378,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 大きい視界
 		Novice::DrawTriangle(
 			static_cast<int>(circle.translation.X), static_cast<int>((circle.translation.Y - WCS.Y) * -1),
-			static_cast<int>(screenSearchLight[0].translation.X), static_cast<int>((screenSearchLight[0].translation.Y - WCS.Y) * -1),
-			static_cast<int>(screenSearchLight[1].translation.X), static_cast<int>((screenSearchLight[1].translation.Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[0].translation.X), static_cast<int>((searchLight[0].translation.Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[1].translation.X), static_cast<int>((searchLight[1].translation.Y - WCS.Y) * -1),
 			searchLightColor,
 			kFillModeSolid
 		);
 		// 小さい視界
 		Novice::DrawTriangle(
 			static_cast<int>(circle.translation.X), static_cast<int>((circle.translation.Y - WCS.Y) * -1),
-			static_cast<int>(screenSearchLight[2].translation.X), static_cast<int>((screenSearchLight[2].translation.Y - WCS.Y) * -1),
-			static_cast<int>(screenSearchLight[3].translation.X), static_cast<int>((screenSearchLight[3].translation.Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[2].translation.X), static_cast<int>((searchLight[2].translation.Y - WCS.Y) * -1),
+			static_cast<int>(searchLight[3].translation.X), static_cast<int>((searchLight[3].translation.Y - WCS.Y) * -1),
 			searchLightColor,
 			kFillModeSolid
 		);
-
-		// 大きい視界
-		//Novice::DrawTriangle(
-		//	static_cast<int>(circle.translation.X), static_cast<int>((circle.translation.Y - WCS.Y) * -1),
-		//	static_cast<int>(searchLight[0].translation.X), static_cast<int>((searchLight[0].translation.Y - WCS.Y) * -1),
-		//	static_cast<int>(searchLight[1].translation.X), static_cast<int>((searchLight[1].translation.Y - WCS.Y) * -1),
-		//	searchLightColor,
-		//	kFillModeSolid
-		//);
-		//// 小さい視界
-		//Novice::DrawTriangle(
-		//	static_cast<int>(circle.translation.X), static_cast<int>((circle.translation.Y - WCS.Y) * -1),
-		//	static_cast<int>(searchLight[2].translation.X), static_cast<int>((searchLight[2].translation.Y - WCS.Y) * -1),
-		//	static_cast<int>(searchLight[3].translation.X), static_cast<int>((searchLight[3].translation.Y - WCS.Y) * -1),
-		//	searchLightColor,
-		//	kFillModeSolid
-		//);
 		
 		///
 		/// ↑描画処理ここまで
