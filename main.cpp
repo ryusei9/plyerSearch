@@ -13,6 +13,12 @@ struct Vector2 {
 	float Y;
 };
 
+struct Vector3 {
+	float X;
+	float Y;
+	float Z;
+};
+
 struct Matrix3x3 {
 	float m[3][3];
 };
@@ -87,7 +93,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.0f,0.0f},
 		{0.0f,0.0f},
 		{0.0f,0.0f},
-		30.0f,
+		20.0f,
 		0xFF0000FF
 	};
 	// 視覚
@@ -110,7 +116,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float speed = 10.0f;
 
 	// 移動速度
-	const float enemyMoveSpeed = 4.0f;
+	const float enemyMoveSpeed = 8.0f;
 
 	const float enemyFoundMoveSpeed = 2.0f;
 
@@ -137,7 +143,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool isRotate = false;
 
 	// 視覚の初期化
-	bool isLightInitialize = false;
+	//bool isLightInitialize = false;
 
 	// 回転行列
 	Matrix3x3 rotateMatrix = {};
@@ -147,17 +153,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	WCS.X = 0.0f;
 	WCS.Y = 500.0f;
 
-	searchLight[0].translation.X = circle.translation.X + -200.0f;
+	searchLight[0].translation.X = circle.translation.X + 200.0f;
 	searchLight[0].translation.Y = circle.translation.Y + -100.0f;
-	searchLight[1].translation.X = circle.translation.X + -200.0f;
+	searchLight[1].translation.X = circle.translation.X + 200.0f;
 	searchLight[1].translation.Y = circle.translation.Y + 100.0f;
-	searchLight[2].translation.X = circle.translation.X + -175.0f;
+	searchLight[2].translation.X = circle.translation.X + 175.0f;
 	searchLight[2].translation.Y = circle.translation.Y + -65.0f;
-	searchLight[3].translation.X = circle.translation.X + -175.0f;
+	searchLight[3].translation.X = circle.translation.X + 175.0f;
 	searchLight[3].translation.Y = circle.translation.Y + 65.0f;
-	searchLight[4].translation.X = circle.translation.X + -200.0f;
+	searchLight[4].translation.X = circle.translation.X + 200.0f;
 	searchLight[4].translation.Y = circle.translation.Y;
-	searchLight[5].translation.X = circle.translation.X + -175.0f;
+	searchLight[5].translation.X = circle.translation.X + 175.0f;
 	searchLight[5].translation.Y = circle.translation.Y;
 
 	// キー入力結果を受け取る箱
@@ -176,13 +182,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓更新処理ここから
 		///
-		ImGui::InputFloat2("translation", &searchLight[0].translation.X);
-		ImGui::InputFloat2("screenTranslation", &screenSearchLight[0].translation.X);
-		ImGui::Checkbox("lightInitialize", &isLightInitialize);
+		//ImGui::InputFloat3("translation", &searchLight[0].translation.X);
+		ImGui::InputFloat3("screenTranslation", &screenSearchLight[0].translation.X);
+		//ImGui::Checkbox("lightInitialize", &isLightInitialize);
 		ImGui::InputInt("foundTimer", &foundTimer);
 		ImGui::InputInt("allertTimer", &allertTimer);
 		ImGui::InputFloat2("enemy.translation", &circle.translation.X);
-		ImGui::Checkbox("searchLightRotate", &isRotate);
+		//ImGui::Checkbox("searchLightRotate", &isRotate);
 		ImGui::Checkbox("isFound", &isAllert);
 		// 初期化
 		player.velocity.X = 0.0f;
@@ -262,7 +268,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		// 視覚の初期化
-		if (isLightInitialize) {
+		//if (isLightInitialize) {
 			searchLight[0].translation.X = circle.translation.X + -200.0f;
 			searchLight[0].translation.Y = circle.translation.Y + -100.0f;
 			searchLight[1].translation.X = circle.translation.X + -200.0f;
@@ -278,7 +284,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			for (int i = 0; i < 6; i++) {
 				searchLight[i].rotate = {};
 			}
-		}
+		//}
 
 		for (int i = 0; i < 6; i++) {
 			if (isRotate) {
@@ -287,7 +293,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			/*rotateMatrix = MakeRotateMatrix(searchLight[i].rotate.X);
 			screenSearchLight[i].translation = TransformNormal(searchLight[i].translation, rotateMatrix);*/
 			screenSearchLight[i].matWorld = MakeAffineMatrix(searchLight[i].scale, searchLight[i].rotate, searchLight[i].translation);
-			screenSearchLight[i].translation = Transform(screenSearchLight[i].translation, screenSearchLight[i].matWorld);
+			screenSearchLight[i].translation = Transform(searchLight[i].translation, screenSearchLight[i].matWorld);
 		}
 
 		
@@ -299,6 +305,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
+		
+		// 敵
+		Novice::DrawEllipse(static_cast<int>(circle.translation.X), static_cast<int>((circle.translation.Y - WCS.Y) * -1),
+			static_cast<int>(circle.radius), static_cast<int>(circle.radius),
+			0.0f,
+			circle.color,
+			kFillModeSolid);
+
 		// 自キャラ
 		Novice::DrawEllipse(
 			static_cast<int>(player.translation.X), static_cast<int>((player.translation.Y - WCS.Y) * -1),
@@ -307,12 +321,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			player.color,
 			kFillModeSolid);
 
-		// 敵
-		Novice::DrawEllipse(static_cast<int>(circle.translation.X), static_cast<int>((circle.translation.Y - WCS.Y) * -1),
-			static_cast<int>(circle.radius), static_cast<int>(circle.radius),
-			0.0f,
-			circle.color,
-			kFillModeSolid);
+		
 
 		// 大きい視界
 		Novice::DrawTriangle(
